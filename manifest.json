@@ -1,0 +1,24 @@
+{
+
+  "description": "Converts certain MIME types to text/plain. A personal replacement for https://github.com/spasche/openinbrowser",
+  "manifest_version": 2,
+  "name": "MIME text converter",
+  "version": "1.0",
+  "icons": {
+    "48": "icons/icon.svg"
+  },
+
+  "permissions": [
+    "webRequest", "webRequestBlocking", "<all_urls>" 
+  ],
+  
+  "browser_action" : {
+    "default_icon": "icons/on.svg",
+	"default_title": "On"
+  },
+  
+  "background": {
+    "scripts": ["background.js"]
+  }
+
+}
