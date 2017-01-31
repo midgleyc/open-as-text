@@ -1,21 +1,16 @@
 {
 
-  "description": "Converts certain MIME types to text/plain. A personal replacement for https://github.com/spasche/openinbrowser",
+  "description": "Provides a context menu for opening links as text/plain. A personal replacement for https://github.com/spasche/openinbrowser",
   "manifest_version": 2,
-  "name": "MIME text converter",
+  "name": "Open as text",
   "version": "1.0",
   "icons": {
     "48": "icons/icon.svg"
   },
 
   "permissions": [
-    "webRequest", "webRequestBlocking", "<all_urls>" 
+    "webRequest", "webRequestBlocking", "contextMenus", "<all_urls>" 
   ],
-  
-  "browser_action" : {
-    "default_icon": "icons/on.svg",
-	"default_title": "On"
-  },
   
   "background": {
     "scripts": ["background.js"]

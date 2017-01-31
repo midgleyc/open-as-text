@@ -1,16 +1,11 @@
 "use strict";
 
-var converted_MIME_types = ["application/msword", "text/troff", "text/x-chdr", "unknown/unknown"];
-var isOn = true;
+var isOn = 0;
 
-function contains(a, obj) {
-    var i = a.length;
-    while (i--) {
-       if (a[i] === obj) {
-           return true;
-       }
-    }
-    return false;
+function openAsText(data) {
+  isOn++;
+  var creating = browser.tabs.create({url: data.linkUrl});
+  creating.then(() => {isOn--}, () => {isOn--})
 }
 
 function rewriteHeaders(e) {
@@ -25,26 +20,15 @@ function rewriteHeaders(e) {
 	    contentDisposition = header;
 	  }
     }
-    if (contains(converted_MIME_types, contentType.value)) {
-      contentType.value = 'text/plain';
-      contentDisposition.value = '';
-    }
+    contentType.value = 'text/plain;charset=UTF-8';
+    contentDisposition.value = '';
   }
   return {responseHeaders: e.responseHeaders};
 }
 
-function toggleButton() {
-  isOn = !isOn;
-  if (isOn) {
-    browser.browserAction.setIcon({path: 'icons/on.svg'});
-  browser.browserAction.setTitle({title: 'On'});
-  } else {
-    browser.browserAction.setIcon({path: 'icons/off.svg'});
-	browser.browserAction.setTitle({title: 'Off'});
-  }
-}
+browser.contextMenus.create({id: "text-open", title: "Open as Text", contexts: ["link"]});
+browser.contextMenus.onClicked.addListener(openAsText);
 
 browser.webRequest.onHeadersReceived.addListener(rewriteHeaders,
                                           {urls: ['<all_urls>']},
                                           ['blocking', 'responseHeaders']);
-browser.browserAction.onClicked.addListener(toggleButton);
