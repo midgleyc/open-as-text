@@ -1,6 +1,7 @@
 {
 
-  "description": "Provides a context menu for opening links as text/plain. A personal replacement for https://github.com/spasche/openinbrowser",
+  "description": "Provides a context menu for opening links as text/plain",
+  "homepage_url": "https://github.com/midgleyc/open-as-text",
   "manifest_version": 2,
   "name": "Open as Text",
   "version": "1.2",
