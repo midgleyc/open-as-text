@@ -5,4 +5,4 @@ Open as Text is a Firefox WebExtension that adds a context menu item for opening
 
 ## Installation
 
-You can install the extension from its [addons.mozilla.org page](https://addons.mozilla.org/en-US/developers/addon/open-as-text/).
+You can install the extension from its [addons.mozilla.org page](https://addons.mozilla.org/en-US/firefox/addon/open-as-text/).
