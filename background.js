@@ -13,12 +13,12 @@ function rewriteHeaders(e) {
   var contentType = [];
   var contentDisposition = [];
   for (var header of e.responseHeaders) {
-    if (header.name == 'Content-Type') {
-	  contentType = header;
-	}
-    if (header.name == 'Content-Disposition') {
-	  contentDisposition = header;
-	}
+    if (header.name.toLowerCase() == 'content-type') {
+      contentType = header;
+    }
+    if (header.name.toLowerCase() == 'content-disposition') {
+      contentDisposition = header;
+    }
   }
   contentType.value = 'text/plain;charset=UTF-8';
   contentDisposition.value = '';
