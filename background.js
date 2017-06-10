@@ -3,63 +3,69 @@
 "use strict";
 
 var isDebug = false;
+var browser = browser || chrome;  // Chrome compatibility
 
 if (isDebug) var debug = console.log.bind(window.console);
 else var debug = function(){};
 
-function removeHeaderListener() {
-  debug("onHeadersReceived.removeListener");
-  browser.webRequest.onHeadersReceived.removeListener(rewriteHeaders);
-}
-
 function openAsText(data) {
-  debug("openAsText", data);
   const url = data.linkUrl;
+  debug("openAsText", url);
 
-  debug("onHeadersReceived.addListener for URL", url);
-  browser.webRequest.onHeadersReceived.addListener(
-      rewriteHeaders,
-      {urls: [url]},
-      ['blocking', 'responseHeaders']
-  );
+  const onTabCreated = (tab) => {
+      const removeListeners = () => {
+        debug("onHeadersReceived.removeListener");
+        browser.webRequest.onHeadersReceived.removeListener(rewriteHeaders);
+      };
 
-  const removeHeaderListenerOnResponse = () => {
-    const listener = () => {
-      removeHeaderListener();
-      // remove self listener
-      debug("onResponseStarted.removeListener");
-      browser.webRequest.onResponseStarted.removeListener(listener);
-    };
+      const rewriteHeaders = (e) => {
+        debug("rewriteHeaders", e);
+        removeListeners();
+        let contentType = [];
+        let contentDisposition = [];
+        for (var header of e.responseHeaders) {
+          if (header.name.toLowerCase() == 'content-type') {
+            contentType = header;
+          }
+          if (header.name.toLowerCase() == 'content-disposition') {
+            contentDisposition = header;
+          }
+        }
+        contentType.value = 'text/plain;charset=UTF-8';
+        contentDisposition.value = '';
+        return {responseHeaders: e.responseHeaders};
+      };
 
-    debug("onResponseStarted.addListener for URL", url);
-    browser.webRequest.onResponseStarted.addListener(
-        listener,
-        {urls: [url]}
-    );
+      const urlsToListen = ["<all_urls>"];
+      debug("onHeadersReceived.addListener for URL", url);
+      browser.webRequest.onHeadersReceived.addListener(
+          rewriteHeaders,
+          {urls: urlsToListen, tabId: tab.id},
+          ['blocking', 'responseHeaders']
+      );
+
+      const updating = browser.tabs.update(tab.id, {url: url});
+      if (updating) {  // Chrome compatibility
+          updating.then(/* onFulfilled: */ () => {}, /* onRejected: */ removeListeners);
+      }
   };
 
-  const creating = browser.tabs.create({url: url});
-  creating.then(
-      removeHeaderListenerOnResponse /* onCreated */,
-      removeHeaderListener /* onError */
-  );
-}
+  // Create new blank tab. After it's created, attach listeners and navigate to url.
 
-function rewriteHeaders(e) {
-  debug("rewriteHeaders", e);
-  let contentType = [];
-  let contentDisposition = [];
-  for (var header of e.responseHeaders) {
-    if (header.name.toLowerCase() == 'content-type') {
-      contentType = header;
-    }
-    if (header.name.toLowerCase() == 'content-disposition') {
-      contentDisposition = header;
-    }
+  // Reason why we don't create new tab with set URL:
+  // When tab with url is created and listeners attached in promise onFulfilled,
+  // there's a race condition where page may be already loaded before listeners
+  // can be attached.
+
+  // Reason why we don't attach listeners before creating tab:
+  // Firefox has a bug where URL is not mached when URL contains a port.
+  // For that reason "<all_urls>" is used for urls pattern
+  // and id of created tab is used to match request.
+
+  const creating = browser.tabs.create({url: "about:blank"}, onTabCreated);
+  if (creating) {  // Chrome compatibility
+    creating.then(onTabCreated);
   }
-  contentType.value = 'text/plain;charset=UTF-8';
-  contentDisposition.value = '';
-  return {responseHeaders: e.responseHeaders};
 }
 
 browser.contextMenus.create({id: "text-open", title: "Open as Text", contexts: ["link"]});
